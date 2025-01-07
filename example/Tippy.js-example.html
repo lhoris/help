@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>도움말 투어 예제</title>
+    <!-- Tippy의 의존성인 Popper.js 먼저 로드 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
+    <!-- Tippy CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tippy.js/6.3.7/tippy.css">
+    <!-- Tippy JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tippy.js/6.3.7/tippy.umd.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .search-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .add-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        .help-btn {
+            background-color: #FFC107;
+            color: black;
+        }
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .tippy-box {
+            background-color: #333;
+            color: white;
+            max-width: 300px !important;
+        }
+        .tippy-content {
+            padding: 12px;
+        }
+        .tour-buttons {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .tour-button {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+        }
+        .tour-button:hover {
+            background: #45a049;
+        }
+        .tour-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button class="search-btn" id="search-btn">검색</button>
+        <button class="add-btn" id="add-btn">추가</button>
+        <button class="help-btn" id="help-btn">도움말</button>
+    </div>
+    
+    <div class="content" id="main-content">
+        <h2>메인 컨텐츠</h2>
+        <p>이 영역에 주요 내용이 표시됩니다.</p>
+    </div>
+
+    <script>
+        // DOM이 완전히 로드된 후에 실행
+        window.addEventListener('load', () => {
+            const tour = [
+                {
+                    element: '#search-btn',
+                    content: '원하는 항목을 검색할 수 있습니다.',
+                    placement: 'bottom'
+                },
+                {
+                    element: '#add-btn',
+                    content: '새로운 항목을 추가할 수 있습니다.',
+                    placement: 'bottom'
+                },
+                {
+                    element: '#main-content',
+                    content: '주요 내용이 이 영역에 표시됩니다.',
+                    placement: 'top'
+                }
+            ];
+
+            let currentStep = 0;
+            let activeTippy = null;
+            let overlay = null;
+
+            function createOverlay() {
+                overlay = document.createElement('div');
+                overlay.className = 'tour-overlay';
+                document.body.appendChild(overlay);
+            }
+
+            function removeOverlay() {
+                if (overlay) {
+                    overlay.remove();
+                    overlay = null;
+                }
+            }
+
+            function createTippyInstance(element, content, placement) {
+                return tippy(element, {
+                    content,
+                    placement,
+                    allowHTML: true,
+                    interactive: true,
+                    trigger: 'manual',
+                    arrow: true,
+                    theme: 'custom',
+                    zIndex: 10000,
+                    appendTo: document.body,  // 경고 메시지 해결을 위해 추가
+                });
+            }
+
+            function showStep(step) {
+                if (activeTippy) {
+                    activeTippy.destroy();
+                }
+
+                const element = document.querySelector(tour[step].element);
+                const content = `
+                    <div>
+                        ${tour[step].content}
+                        <div class="tour-buttons">
+                            ${step > 0 ? '<button class="tour-button prev-btn">이전</button>' : ''}
+                            ${step < tour.length - 1 
+                                ? '<button class="tour-button next-btn">다음</button>'
+                                : '<button class="tour-button end-btn">완료</button>'}
+                        </div>
+                    </div>
+                `;
+
+                activeTippy = createTippyInstance(element, content, tour[step].placement);
+                activeTippy.show();
+
+                // 버튼 이벤트 리스너 추가
+                setTimeout(() => {
+                    const tippyContent = activeTippy.popper.querySelector('.tippy-content');
+                    
+                    const nextBtn = tippyContent.querySelector('.next-btn');
+                    if (nextBtn) {
+                        nextBtn.addEventListener('click', () => {
+                            currentStep++;
+                            showStep(currentStep);
+                        });
+                    }
+
+                    const prevBtn = tippyContent.querySelector('.prev-btn');
+                    if (prevBtn) {
+                        prevBtn.addEventListener('click', () => {
+                            currentStep--;
+                            showStep(currentStep);
+                        });
+                    }
+
+                    const endBtn = tippyContent.querySelector('.end-btn');
+                    if (endBtn) {
+                        endBtn.addEventListener('click', () => {
+                            if (activeTippy) {
+                                activeTippy.destroy();
+                                activeTippy = null;
+                            }
+                            removeOverlay();
+                            currentStep = 0;
+                        });
+                    }
+                }, 0);
+            }
+
+            document.getElementById('help-btn').addEventListener('click', () => {
+                createOverlay();
+                currentStep = 0;
+                showStep(currentStep);
+            });
+        });
+    </script>
+</body>
+</html>

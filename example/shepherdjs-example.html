@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>도움말 투어 예제</title>
+    <!-- 수정된 Shepherd CDN 링크 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shepherd.js/11.2.0/css/shepherd.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shepherd.js/11.2.0/js/shepherd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .search-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .add-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        .help-btn {
+            background-color: #FFC107;
+            color: black;
+        }
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Shepherd 커스텀 스타일 */
+        .shepherd-button {
+            background: #3288e6;
+            border: none;
+            border-radius: 3px;
+            color: white;
+            cursor: pointer;
+            margin-right: 8px;
+            padding: 8px 12px;
+            text-decoration: none;
+        }
+        .shepherd-button:not(:disabled):hover {
+            background: #196fcc;
+        }
+        .shepherd-button.shepherd-button-secondary {
+            background: #f1f2f3;
+            color: rgba(0, 0, 0, 0.75);
+        }
+        .shepherd-button.shepherd-button-secondary:not(:disabled):hover {
+            background: #d5d8dc;
+            color: rgba(0, 0, 0, 0.75);
+        }
+        .shepherd-footer {
+            padding: 0 0.8em 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button class="search-btn" id="search-btn">검색</button>
+        <button class="add-btn" id="add-btn">추가</button>
+        <button class="help-btn" id="help-btn">도움말</button>
+    </div>
+    
+    <div class="content" id="main-content">
+        <h2>메인 컨텐츠</h2>
+        <p>이 영역에 주요 내용이 표시됩니다.</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tour = new Shepherd.Tour({
+                useModalOverlay: true,
+                defaultStepOptions: {
+                    classes: 'shepherd-theme-default',
+                    scrollTo: true,
+                    cancelIcon: {
+                        enabled: true
+                    }
+                },
+                modalOverlayOpeningPadding: 4
+            });
+
+            tour.addStep({
+                id: 'search',
+                text: '원하는 항목을 검색할 수 있습니다.',
+                attachTo: {
+                    element: '#search-btn',
+                    on: 'bottom'
+                },
+                buttons: [
+                    {
+                        text: '다음',
+                        action: () => tour.next()
+                    }
+                ]
+            });
+
+            tour.addStep({
+                id: 'add',
+                text: '새로운 항목을 추가할 수 있습니다.',
+                attachTo: {
+                    element: '#add-btn',
+                    on: 'bottom'
+                },
+                buttons: [
+                    {
+                        text: '이전',
+                        action: () => tour.back(),
+                        classes: 'shepherd-button-secondary'
+                    },
+                    {
+                        text: '다음',
+                        action: () => tour.next()
+                    }
+                ]
+            });
+
+            tour.addStep({
+                id: 'content',
+                text: '주요 내용이 이 영역에 표시됩니다.',
+                attachTo: {
+                    element: '#main-content',
+                    on: 'top'
+                },
+                buttons: [
+                    {
+                        text: '이전',
+                        action: () => tour.back(),
+                        classes: 'shepherd-button-secondary'
+                    },
+                    {
+                        text: '완료',
+                        action: () => tour.complete()
+                    }
+                ]
+            });
+
+            document.getElementById('help-btn').addEventListener('click', () => {
+                tour.start();
+            });
+        });
+    </script>
+</body>
+</html>
